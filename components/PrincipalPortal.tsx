@@ -622,34 +622,115 @@ const PrincipalPortal: React.FC<PrincipalPortalProps> = ({ onBack, principal }) 
                 </div>
               </div>
 
-              {/* Data Table with Pagination */}
+              {/* Detail Penilaian - Visual Cards Layout */}
               <div className="mt-8">
-                <DataTable
-                  title={`Detail Penilaian (Halaman ${reportPage} dari ${totalReportPages})`}
-                  data={paginatedReportScores}
-                  columns={scoreColumns}
-                />
-                {totalReportPages > 1 && (
-                  <div className="flex justify-between items-center mt-4">
-                    <button
-                      onClick={() => setReportPage(prev => Math.max(prev - 1, 1))}
-                      disabled={reportPage === 1}
-                      className="px-4 py-2 bg-emerald-500 text-white rounded-lg disabled:bg-gray-300 disabled:cursor-not-allowed hover:bg-emerald-600"
-                    >
-                      Sebelumnya
-                    </button>
-                    <span className="text-sm text-gray-600">
-                      Halaman {reportPage} dari {totalReportPages} ({filteredReportScores.length} penilaian)
+                <div className="bg-white rounded-lg shadow p-6">
+                  <div className="flex justify-between items-center mb-6">
+                    <h4 className="text-xl font-semibold text-gray-800">Detail Penilaian</h4>
+                    <span className="text-sm text-gray-600 bg-gray-100 px-3 py-1 rounded-full">
+                      {filteredReportScores.length} penilaian total
                     </span>
-                    <button
-                      onClick={() => setReportPage(prev => Math.min(prev + 1, totalReportPages))}
-                      disabled={reportPage === totalReportPages}
-                      className="px-4 py-2 bg-emerald-500 text-white rounded-lg disabled:bg-gray-300 disabled:cursor-not-allowed hover:bg-emerald-600"
-                    >
-                      Selanjutnya
-                    </button>
                   </div>
-                )}
+
+                  {paginatedReportScores.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {paginatedReportScores.map((score, index) => {
+                        const studentName = students?.find(s => s.NISN === score['Student ID'])?.Name || score['Student ID'];
+                        const scoreColor = {
+                          BB: 'bg-red-100 text-red-800 border-red-200',
+                          MB: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+                          BSH: 'bg-green-100 text-green-800 border-green-200',
+                          BSB: 'bg-emerald-100 text-emerald-800 border-emerald-200'
+                        }[score.Score] || 'bg-gray-100 text-gray-800 border-gray-200';
+
+                        return (
+                          <div key={`${score['Student ID']}-${score.Date}-${index}`} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                            <div className="flex justify-between items-start mb-3">
+                              <div className="flex-1">
+                                <h5 className="font-semibold text-gray-900 text-sm truncate">{studentName}</h5>
+                                <p className="text-xs text-gray-500">{score['Student ID']}</p>
+                              </div>
+                              <span className={`px-2 py-1 text-xs font-semibold rounded-full border ${scoreColor}`}>
+                                {score.Score}
+                              </span>
+                            </div>
+
+                            <div className="space-y-2">
+                              <div className="flex justify-between text-sm">
+                                <span className="text-gray-600">Kategori:</span>
+                                <span className="font-medium text-gray-900">{score.Category}</span>
+                              </div>
+                              <div className="flex justify-between text-sm">
+                                <span className="text-gray-600">Item:</span>
+                                <span className="font-medium text-gray-900 truncate ml-2">{score['Item Name']}</span>
+                              </div>
+                              <div className="flex justify-between text-sm">
+                                <span className="text-gray-600">Tanggal:</span>
+                                <span className="font-medium text-gray-900">{score.Date}</span>
+                              </div>
+                              {score.Notes && (
+                                <div className="mt-2 p-2 bg-gray-50 rounded text-xs text-gray-700">
+                                  <span className="font-medium">Catatan:</span> {score.Notes}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="text-center py-12">
+                      <div className="text-gray-400 mb-4">
+                        <svg className="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                      </div>
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">Tidak ada data penilaian</h3>
+                      <p className="text-gray-500">Coba ubah filter untuk melihat data penilaian lainnya.</p>
+                    </div>
+                  )}
+
+                  {/* Pagination */}
+                  {totalReportPages > 1 && (
+                    <div className="flex justify-center items-center mt-8 space-x-2">
+                      <button
+                        onClick={() => setReportPage(prev => Math.max(prev - 1, 1))}
+                        disabled={reportPage === 1}
+                        className="px-3 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed hover:bg-gray-50"
+                      >
+                        ← Sebelumnya
+                      </button>
+
+                      <div className="flex space-x-1">
+                        {Array.from({ length: Math.min(5, totalReportPages) }, (_, i) => {
+                          const pageNum = Math.max(1, Math.min(totalReportPages - 4, reportPage - 2)) + i;
+                          if (pageNum > totalReportPages) return null;
+                          return (
+                            <button
+                              key={pageNum}
+                              onClick={() => setReportPage(pageNum)}
+                              className={`px-3 py-2 border rounded-lg ${
+                                pageNum === reportPage
+                                  ? 'bg-emerald-500 text-white border-emerald-500'
+                                  : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                              }`}
+                            >
+                              {pageNum}
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      <button
+                        onClick={() => setReportPage(prev => Math.min(prev + 1, totalReportPages))}
+                        disabled={reportPage === totalReportPages}
+                        className="px-3 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed hover:bg-gray-50"
+                      >
+                        Selanjutnya →
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           )}
