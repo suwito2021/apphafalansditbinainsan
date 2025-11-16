@@ -3,6 +3,8 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 import { getSheetData } from '../services/googleSheetsService';
 import type { Teacher, Student, Principal, Score } from '../types';
 import { ChevronLeftIcon } from './icons';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 interface PrincipalPortalProps {
   onBack: () => void;
@@ -288,6 +290,62 @@ const PrincipalPortal: React.FC<PrincipalPortalProps> = ({ onBack, principal }) 
       .sort((a, b) => a.date.localeCompare(b.date));
   }, [filteredReportScores]);
 
+  // PDF Export Functions
+  const exportStudentReportToPDF = async () => {
+    const element = document.getElementById('student-report-content');
+    if (!element) return;
+
+    const canvas = await html2canvas(element, { scale: 2 });
+    const imgData = canvas.toDataURL('image/png');
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const imgWidth = 210;
+    const pageHeight = 295;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    let heightLeft = imgHeight;
+
+    let position = 0;
+
+    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+    heightLeft -= pageHeight;
+
+    while (heightLeft >= 0) {
+      position = heightLeft - imgHeight;
+      pdf.addPage();
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+    }
+
+    pdf.save(`Laporan_Siswa_${studentReportData?.name.replace(/\s+/g, '_')}.pdf`);
+  };
+
+  const exportClassReportToPDF = async () => {
+    const element = document.getElementById('class-report-content');
+    if (!element) return;
+
+    const canvas = await html2canvas(element, { scale: 2 });
+    const imgData = canvas.toDataURL('image/png');
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const imgWidth = 210;
+    const pageHeight = 295;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    let heightLeft = imgHeight;
+
+    let position = 0;
+
+    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+    heightLeft -= pageHeight;
+
+    while (heightLeft >= 0) {
+      position = heightLeft - imgHeight;
+      pdf.addPage();
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+    }
+
+    const className = selectedClassForReport === 'all' ? 'Semua_Kelas' : selectedClassForReport;
+    pdf.save(`Laporan_Kelas_${className}.pdf`);
+  };
+
   const teacherColumns = [{ header: 'Nama', accessor: 'Name' as keyof Teacher}, { header: 'Telepon', accessor: 'Phone' as keyof Teacher}, { header: 'Kelas', accessor: 'Class' as keyof Teacher}];
   const studentColumns = [{ header: 'Nama', accessor: 'Name' as keyof Student}, { header: 'NISN', accessor: 'NISN' as keyof Student}, { header: 'Kelas', accessor: 'Class' as keyof Student}];
   const scoreColumns = [
@@ -448,7 +506,7 @@ const PrincipalPortal: React.FC<PrincipalPortalProps> = ({ onBack, principal }) 
                       ))}
                     </select>
                   </div>
-                  <div className="flex items-end">
+                  <div className="flex items-end space-x-2">
                     <button
                       onClick={() => {
                         setReportStartDate('');
@@ -460,6 +518,22 @@ const PrincipalPortal: React.FC<PrincipalPortalProps> = ({ onBack, principal }) 
                     >
                       Reset Filter
                     </button>
+                    {selectedStudentForReport && (
+                      <button
+                        onClick={exportStudentReportToPDF}
+                        className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                      >
+                        Cetak Laporan Siswa (PDF)
+                      </button>
+                    )}
+                    {!selectedStudentForReport && (
+                      <button
+                        onClick={exportClassReportToPDF}
+                        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                      >
+                        Cetak Laporan Kelas (PDF)
+                      </button>
+                    )}
                   </div>
                 </div>
                 <div className="mt-4 text-sm text-gray-600">
@@ -469,7 +543,7 @@ const PrincipalPortal: React.FC<PrincipalPortalProps> = ({ onBack, principal }) 
 
               {/* Student Detail View */}
               {studentReportData && (
-                <div className="bg-white p-6 rounded-lg shadow mb-6">
+                <div id="student-report-content" className="bg-white p-6 rounded-lg shadow mb-6">
                   <h4 className="text-xl font-semibold text-gray-800 mb-4">Detail Siswa: {studentReportData.name}</h4>
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                     <div className="text-center">
@@ -557,7 +631,7 @@ const PrincipalPortal: React.FC<PrincipalPortalProps> = ({ onBack, principal }) 
 
               {/* General Charts - only show when no specific student is selected */}
               {!selectedStudentForReport && filteredReportScores.length > 0 && (
-                <div className="space-y-6">
+                <div id="class-report-content" className="space-y-6">
                   {/* Score Level Distribution */}
                   <div className="bg-white p-6 rounded-lg shadow">
                     <h4 className="text-lg font-semibold text-gray-800 mb-4">Distribusi Tingkat Penilaian</h4>
