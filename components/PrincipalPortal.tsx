@@ -62,6 +62,8 @@ const PrincipalPortal: React.FC<PrincipalPortalProps> = ({ onBack, principal }) 
   const [selectedStudentForReport, setSelectedStudentForReport] = useState<string>('');
   const [reportPage, setReportPage] = useState(1);
   const reportsPerPage = 10;
+  const [studentSummaryPage, setStudentSummaryPage] = useState(1);
+  const studentsPerSummaryPage = 10;
 
   useEffect(() => {
     const fetchAllData = async () => {
@@ -100,10 +102,14 @@ const PrincipalPortal: React.FC<PrincipalPortalProps> = ({ onBack, principal }) 
     setCurrentPage(1);
   }, [selectedClass]);
 
-  // Reset report page when filters change
+  // Reset pages when filters change
   useEffect(() => {
     setReportPage(1);
   }, [reportStartDate, reportEndDate, selectedStudentForReport]);
+
+  useEffect(() => {
+    setStudentSummaryPage(1);
+  }, [reportStartDate, reportEndDate]); // Reset student summary page when date filters change
 
   // Filtered scores for reports
   const filteredReportScores = useMemo(() => {
@@ -218,6 +224,12 @@ const PrincipalPortal: React.FC<PrincipalPortalProps> = ({ onBack, principal }) 
       };
     }).sort((a, b) => b.totalAssessments - a.totalAssessments); // Sort by most active students first
   }, [students, scores]);
+
+  // Pagination for student summary
+  const totalStudentSummaryPages = Math.ceil(studentSummaryData.length / studentsPerSummaryPage);
+  const startStudentSummaryIndex = (studentSummaryPage - 1) * studentsPerSummaryPage;
+  const endStudentSummaryIndex = startStudentSummaryIndex + studentsPerSummaryPage;
+  const paginatedStudentSummary = studentSummaryData.slice(startStudentSummaryIndex, endStudentSummaryIndex);
 
   // Chart data calculations
   const scoreLevelData = useMemo(() => {
@@ -595,7 +607,7 @@ const PrincipalPortal: React.FC<PrincipalPortalProps> = ({ onBack, principal }) 
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
-                        {studentSummaryData.map((student, index) => (
+                        {paginatedStudentSummary.map((student, index) => (
                           <tr key={student.nisn} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{student.name}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{student.nisn}</td>

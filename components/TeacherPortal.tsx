@@ -52,6 +52,8 @@ const TeacherPortal: React.FC<TeacherPortalProps> = ({ onBack, teacher }) => {
   const [selectedStudent, setSelectedStudent] = useState<string>('');
   const [startDate, setStartDate] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const [formData, setFormData] = useState<Omit<Score, 'Timestamp'>>({
     'Student ID': '',
@@ -151,6 +153,10 @@ const TeacherPortal: React.FC<TeacherPortalProps> = ({ onBack, teacher }) => {
     }
     return filtered;
   }, [scores, selectedStudent, startDate, endDate]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedStudent, startDate, endDate]);
 
   const scoreCountsSurah = useMemo(() => {
     const counts = { BB: 0, MB: 0, BSH: 0, BSB: 0 };
@@ -285,6 +291,9 @@ const TeacherPortal: React.FC<TeacherPortalProps> = ({ onBack, teacher }) => {
     if (error && scores.length === 0) return <p className="text-center text-red-500 py-8">{error}</p>;
     if (scores.length === 0) return <p className="text-center text-gray-500 py-8">Belum ada data penilaian untuk kelas ini.</p>;
 
+    const totalPages = Math.ceil(filteredScores.length / itemsPerPage);
+    const paginatedScores = filteredScores.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
     return (
       <div>
         <h3 className="text-xl font-semibold text-gray-800 mb-4">Laporan Penilaian Kelas {teacher.Class}</h3>
@@ -324,9 +333,9 @@ const TeacherPortal: React.FC<TeacherPortalProps> = ({ onBack, teacher }) => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredScores.map((score, index) => (
+              {paginatedScores.map((score, index) => (
                 <tr key={index}>
-                  <td className="px-4 py-4 text-sm text-gray-900 break-words">{index + 1}</td>
+                  <td className="px-4 py-4 text-sm text-gray-900 break-words">{(currentPage - 1) * itemsPerPage + index + 1}</td>
                   <td className="px-4 py-4 text-sm text-gray-900 font-medium break-words">{studentMap.get(score['Student ID']) || score['Student ID']}</td>
                   <td className="px-4 py-4 text-sm text-gray-900 break-words">{score.Category}</td>
                   <td className="px-4 py-4 text-sm text-gray-900 break-words">{score['Item Name']}</td>
@@ -339,6 +348,27 @@ const TeacherPortal: React.FC<TeacherPortalProps> = ({ onBack, teacher }) => {
           </table>
         </div>
         {filteredScores.length === 0 && scores.length > 0 && <p className="text-center text-gray-500 py-4">Tidak ada data yang cocok dengan filter.</p>}
+        {totalPages > 1 && (
+          <div className="flex justify-between items-center mt-4 px-4 py-3 bg-gray-50 border-t">
+            <button
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className="px-3 py-1 text-sm bg-white border border-gray-300 rounded hover:bg-gray-50 disabled:bg-gray-100 disabled:text-gray-400"
+            >
+              Previous
+            </button>
+            <span className="text-sm text-gray-700">
+              Halaman {currentPage} dari {totalPages} ({filteredScores.length} data)
+            </span>
+            <button
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages}
+              className="px-3 py-1 text-sm bg-white border border-gray-300 rounded hover:bg-gray-50 disabled:bg-gray-100 disabled:text-gray-400"
+            >
+              Next
+            </button>
+          </div>
+        )}
         <div className="mt-8">
           <h4 className="text-lg font-semibold text-gray-800 mb-4">Grafik Capaian Penilaian</h4>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
