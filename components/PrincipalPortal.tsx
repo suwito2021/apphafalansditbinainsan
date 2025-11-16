@@ -59,6 +59,9 @@ const PrincipalPortal: React.FC<PrincipalPortalProps> = ({ onBack, principal }) 
   // Report filters
   const [reportStartDate, setReportStartDate] = useState<string>('');
   const [reportEndDate, setReportEndDate] = useState<string>('');
+  const [selectedStudentForReport, setSelectedStudentForReport] = useState<string>('');
+  const [reportPage, setReportPage] = useState(1);
+  const reportsPerPage = 10;
 
   useEffect(() => {
     const fetchAllData = async () => {
@@ -97,6 +100,11 @@ const PrincipalPortal: React.FC<PrincipalPortalProps> = ({ onBack, principal }) 
     setCurrentPage(1);
   }, [selectedClass]);
 
+  // Reset report page when filters change
+  useEffect(() => {
+    setReportPage(1);
+  }, [reportStartDate, reportEndDate, selectedStudentForReport]);
+
   // Filtered scores for reports
   const filteredReportScores = useMemo(() => {
     if (!scores) return [];
@@ -107,8 +115,69 @@ const PrincipalPortal: React.FC<PrincipalPortalProps> = ({ onBack, principal }) 
     if (reportEndDate) {
       filtered = filtered.filter(score => score.Date <= reportEndDate);
     }
+    if (selectedStudentForReport) {
+      filtered = filtered.filter(score => score['Student ID'] === selectedStudentForReport);
+    }
     return filtered;
-  }, [scores, reportStartDate, reportEndDate]);
+  }, [scores, reportStartDate, reportEndDate, selectedStudentForReport]);
+
+  // Pagination for reports
+  const totalReportPages = Math.ceil(filteredReportScores.length / reportsPerPage);
+  const startReportIndex = (reportPage - 1) * reportsPerPage;
+  const endReportIndex = startReportIndex + reportsPerPage;
+  const paginatedReportScores = filteredReportScores.slice(startReportIndex, endReportIndex);
+
+  // Student-specific data for detailed view
+  const studentReportData = useMemo(() => {
+    if (!selectedStudentForReport || !scores) return null;
+
+    const studentScores = scores.filter(score => score['Student ID'] === selectedStudentForReport);
+    const studentName = students?.find(s => s.NISN === selectedStudentForReport)?.Name || selectedStudentForReport;
+
+    // Score distribution for this student
+    const scoreLevels = { BB: 0, MB: 0, BSH: 0, BSB: 0 };
+    studentScores.forEach(score => {
+      if (scoreLevels[score.Score as keyof typeof scoreLevels] !== undefined) {
+        scoreLevels[score.Score as keyof typeof scoreLevels]++;
+      }
+    });
+
+    // Category performance
+    const categoryPerformance: Record<string, { total: number; scores: Record<string, number> }> = {};
+    studentScores.forEach(score => {
+      if (!categoryPerformance[score.Category]) {
+        categoryPerformance[score.Category] = { total: 0, scores: { BB: 0, MB: 0, BSH: 0, BSB: 0 } };
+      }
+      categoryPerformance[score.Category].total++;
+      categoryPerformance[score.Category].scores[score.Score as keyof typeof scoreLevels]++;
+    });
+
+    // Timeline data
+    const timelineData = {};
+    studentScores.forEach(score => {
+      timelineData[score.Date] = (timelineData[score.Date] || 0) + 1;
+    });
+
+    return {
+      name: studentName,
+      totalAssessments: studentScores.length,
+      scoreDistribution: Object.entries(scoreLevels).map(([level, count]) => ({
+        level,
+        count,
+        percentage: studentScores.length > 0 ? Math.round((count / studentScores.length) * 100) : 0
+      })),
+      categoryPerformance: Object.entries(categoryPerformance).map(([category, data]) => ({
+        category,
+        ...data
+      })),
+      timelineData: Object.entries(timelineData)
+        .map(([date, count]) => ({ date, count }))
+        .sort((a, b) => a.date.localeCompare(b.date)),
+      recentAssessments: studentScores
+        .sort((a, b) => new Date(b.Date).getTime() - new Date(a.Date).getTime())
+        .slice(0, 5)
+    };
+  }, [selectedStudentForReport, scores, students]);
 
   // Chart data calculations
   const scoreLevelData = useMemo(() => {
@@ -260,7 +329,7 @@ const PrincipalPortal: React.FC<PrincipalPortalProps> = ({ onBack, principal }) 
               {/* Filters */}
               <div className="bg-white p-6 rounded-lg shadow mb-6">
                 <h4 className="text-lg font-semibold text-gray-800 mb-4">Filter Data</h4>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Tanggal Mulai</label>
                     <input
@@ -279,9 +348,28 @@ const PrincipalPortal: React.FC<PrincipalPortalProps> = ({ onBack, principal }) 
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     />
                   </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Siswa</label>
+                    <select
+                      value={selectedStudentForReport}
+                      onChange={(e) => setSelectedStudentForReport(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    >
+                      <option value="">Semua Siswa</option>
+                      {students?.map(student => (
+                        <option key={student.NISN} value={student.NISN}>
+                          {student.Name} ({student.NISN})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                   <div className="flex items-end">
                     <button
-                      onClick={() => { setReportStartDate(''); setReportEndDate(''); }}
+                      onClick={() => {
+                        setReportStartDate('');
+                        setReportEndDate('');
+                        setSelectedStudentForReport('');
+                      }}
                       className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
                     >
                       Reset Filter
@@ -293,8 +381,96 @@ const PrincipalPortal: React.FC<PrincipalPortalProps> = ({ onBack, principal }) 
                 </div>
               </div>
 
-              {/* Charts */}
-              {filteredReportScores.length > 0 && (
+              {/* Student Detail View */}
+              {studentReportData && (
+                <div className="bg-white p-6 rounded-lg shadow mb-6">
+                  <h4 className="text-xl font-semibold text-gray-800 mb-4">Detail Siswa: {studentReportData.name}</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-emerald-600">{studentReportData.totalAssessments}</div>
+                      <div className="text-sm text-gray-600">Total Penilaian</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-blue-600">
+                        {studentReportData.scoreDistribution.find(s => s.level === 'BSB')?.count || 0}
+                      </div>
+                      <div className="text-sm text-gray-600">BSB</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-green-600">
+                        {studentReportData.scoreDistribution.find(s => s.level === 'BSH')?.count || 0}
+                      </div>
+                      <div className="text-sm text-gray-600">BSH</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-yellow-600">
+                        {studentReportData.scoreDistribution.find(s => s.level === 'MB')?.count || 0}
+                      </div>
+                      <div className="text-sm text-gray-600">MB</div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Student Score Distribution */}
+                    <div>
+                      <h5 className="text-lg font-medium text-gray-700 mb-3">Distribusi Penilaian</h5>
+                      <ResponsiveContainer width="100%" height={250}>
+                        <BarChart data={studentReportData.scoreDistribution}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="level" />
+                          <YAxis />
+                          <Tooltip formatter={(value, name) => [`${value} (${studentReportData.scoreDistribution.find(d => d.level === name)?.percentage}%)`, 'Jumlah']} />
+                          <Bar dataKey="count" fill="#10b981" />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+
+                    {/* Student Timeline */}
+                    <div>
+                      <h5 className="text-lg font-medium text-gray-700 mb-3">Aktivitas Penilaian</h5>
+                      <ResponsiveContainer width="100%" height={250}>
+                        <LineChart data={studentReportData.timelineData}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="date" />
+                          <YAxis />
+                          <Tooltip labelFormatter={(label) => `Tanggal: ${label}`} />
+                          <Line type="monotone" dataKey="count" stroke="#3b82f6" strokeWidth={2} />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+
+                  {/* Recent Assessments */}
+                  <div className="mt-6">
+                    <h5 className="text-lg font-medium text-gray-700 mb-3">Penilaian Terbaru</h5>
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Tanggal</th>
+                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Kategori</th>
+                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Item</th>
+                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Skor</th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {studentReportData.recentAssessments.map((assessment, index) => (
+                            <tr key={index}>
+                              <td className="px-4 py-2 text-sm text-gray-900">{assessment.Date}</td>
+                              <td className="px-4 py-2 text-sm text-gray-900">{assessment.Category}</td>
+                              <td className="px-4 py-2 text-sm text-gray-900">{assessment['Item Name']}</td>
+                              <td className="px-4 py-2 text-sm font-semibold text-gray-900">{assessment.Score}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* General Charts - only show when no specific student is selected */}
+              {!selectedStudentForReport && filteredReportScores.length > 0 && (
                 <div className="space-y-6">
                   {/* Score Level Distribution */}
                   <div className="bg-white p-6 rounded-lg shadow">
@@ -355,9 +531,34 @@ const PrincipalPortal: React.FC<PrincipalPortalProps> = ({ onBack, principal }) 
                 </div>
               )}
 
-              {/* Data Table */}
+              {/* Data Table with Pagination */}
               <div className="mt-8">
-                <DataTable title="Detail Penilaian" data={filteredReportScores} columns={scoreColumns} />
+                <DataTable
+                  title={`Detail Penilaian (Halaman ${reportPage} dari ${totalReportPages})`}
+                  data={paginatedReportScores}
+                  columns={scoreColumns}
+                />
+                {totalReportPages > 1 && (
+                  <div className="flex justify-between items-center mt-4">
+                    <button
+                      onClick={() => setReportPage(prev => Math.max(prev - 1, 1))}
+                      disabled={reportPage === 1}
+                      className="px-4 py-2 bg-emerald-500 text-white rounded-lg disabled:bg-gray-300 disabled:cursor-not-allowed hover:bg-emerald-600"
+                    >
+                      Sebelumnya
+                    </button>
+                    <span className="text-sm text-gray-600">
+                      Halaman {reportPage} dari {totalReportPages} ({filteredReportScores.length} penilaian)
+                    </span>
+                    <button
+                      onClick={() => setReportPage(prev => Math.min(prev + 1, totalReportPages))}
+                      disabled={reportPage === totalReportPages}
+                      className="px-4 py-2 bg-emerald-500 text-white rounded-lg disabled:bg-gray-300 disabled:cursor-not-allowed hover:bg-emerald-600"
+                    >
+                      Selanjutnya
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           )}
