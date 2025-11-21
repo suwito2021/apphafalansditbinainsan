@@ -7,8 +7,8 @@ interface LandingPageProps {
 const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
   return (
     <div className="w-full max-w-6xl mx-auto text-center">
-      <h1 className="text-2xl md:text-3xl mb-4 text-gray-800">Selamat Datang di Aplikasi</h1>
-      <p className="text-2xl md:text-3xl font-bold mb-8 text-gray-600">SD IT BINA INSAN</p>
+      <h1 className="text-2xl md:text-3xl mb-4 text-gray-800">Selamat Datang di</h1>
+      <p className="text-2xl md:text-3xl font-bold mb-8 text-white">SD IT BINA INSAN</p>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">

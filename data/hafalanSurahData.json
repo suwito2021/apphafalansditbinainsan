@@ -223,5 +223,35 @@
     "Category": "Hafalan Hadist",
     "ItemName": "Hadits Sholat Tiang Agama",
     "Semester": 2
+  },
+  {
+    "Category": "Al-Hakam",
+    "ItemName": "An - Naba`",
+    "Semester": 1
+  },
+  {
+    "Category": "Al-Hakam",
+    "ItemName": "At - Takwir",
+    "Semester": 2
+  },
+  {
+    "Category": "Al-Hakam",
+    "ItemName": "An Naziat",
+    "Semester": 1
+  },
+  {
+    "Category": "Al-Hakam",
+    "ItemName": "Al Infitar",
+    "Semester": 2
+  },
+  {
+    "Category": "Al-Hakam",
+    "ItemName": "Abasa",
+    "Semester": 1
+  },
+  {
+    "Category": "Al-Hakam",
+    "ItemName": "Al - Muthaffifin",
+    "Semester": 2
   }
 ]
