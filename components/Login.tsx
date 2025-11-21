@@ -14,7 +14,7 @@ interface LoginProps {
 
 const portalConfig = {
   teacher: {
-    title: 'Login Portal Guru',
+    title: 'Login sebagai Guru',
     icon: <BookIcon className="w-10 h-10 text-white" />,
     placeholder: 'Masukan Pin Anda',
     sheetName: 'Teacher',
@@ -22,7 +22,7 @@ const portalConfig = {
     iconBgClass: 'bg-emerald-500',
   },
   parent: {
-    title: 'Login Portal Orang Tua',
+    title: 'Login sebagai Orang Tua',
     icon: <UsersIcon className="w-10 h-10 text-white" />,
     placeholder: 'Masukan Pin Anda',
     sheetName: 'Student',
@@ -30,7 +30,7 @@ const portalConfig = {
     iconBgClass: 'bg-blue-500',
   },
   principal: {
-    title: 'Login Portal Kepala Sekolah',
+    title: 'Login sebagai Kepala Sekolah',
     icon: <ShieldCheckIcon className="w-10 h-10 text-white" />,
     placeholder: 'Masukan Pin Anda',
     sheetName: 'Principal',
@@ -74,11 +74,13 @@ const Login: React.FC<LoginProps> = ({ portalType, onBack, onLoginSuccess }) => 
             <ChevronLeftIcon className="w-5 h-5 mr-1" />
             Kembali
         </button>
-      <div className={`w-20 h-20 rounded-full flex items-center justify-center mb-6 mt-10 mx-auto ${config.iconBgClass}`}>
-        {config.icon}
-      </div>
-      <h2 className="text-2xl md:text-3xl font-bold text-gray-800">{config.title}</h2>
-      <p className="text-gray-500 mb-8">TK IT Harvydsyah</p>
+      <img
+        src="https://iili.io/f3I2n3v.png"
+        alt="Logo SD IT BINA INSAN"
+        className="mx-auto mb-6 w-20 h-20"
+      />
+      <h2 className="text-lg md:text-xl font-bold text-gray-800">{config.title}</h2>
+      <p className="text-gray-500 mb-8">SD IT BINA INSAN</p>
 
       <form onSubmit={handleLogin} className="space-y-6">
         <div className="relative">
@@ -88,7 +90,7 @@ const Login: React.FC<LoginProps> = ({ portalType, onBack, onLoginSuccess }) => 
             onChange={(e) => setInputValue(e.target.value)}
             placeholder={config.placeholder}
             required
-            className="w-full px-4 py-3 pr-12 bg-gray-700 text-white rounded-lg border-2 border-transparent focus:outline-none focus:border-emerald-500 placeholder-gray-400"
+            className="w-full px-4 py-3 pr-12 bg-gray-100 text-gray-900 rounded-lg border-2 border-transparent focus:outline-none focus:border-emerald-500 placeholder-gray-500"
             aria-label={config.placeholder}
           />
           <button

@@ -46,7 +46,7 @@ const TeacherPortal: React.FC<TeacherPortalProps> = ({ onBack, teacher }) => {
   const [submitStatus, setSubmitStatus] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   
   const [mainTab, setMainTab] = useState<'input' | 'report'>('input');
-  const [activeSubTab, setActiveSubTab] = useState<InputTabKey>('surah1');
+  const [activeSemester, setActiveSemester] = useState<1 | 2>(1);
 
   // Filter states for report
   const [selectedStudent, setSelectedStudent] = useState<string>('');
@@ -100,13 +100,13 @@ const TeacherPortal: React.FC<TeacherPortalProps> = ({ onBack, teacher }) => {
     if (mainTab === 'input') {
       setFormData(prev => ({
         ...prev,
-        Category: INPUT_TABS[activeSubTab].category,
-        'Item Name': '', 
+        Category: '',
+        'Item Name': '',
         Score: '',
       }));
     }
     setSubmitStatus(null);
-  }, [activeSubTab, mainTab]);
+  }, [activeSemester, mainTab]);
 
   useEffect(() => {
     if (mainTab === 'report' && students.length > 0) {
@@ -131,14 +131,8 @@ const TeacherPortal: React.FC<TeacherPortalProps> = ({ onBack, teacher }) => {
 
   const studentMap = useMemo(() => new Map(students.map(s => [s.NISN, s.Name])), [students]);
   const filteredHafalanItems = useMemo(() => {
-    const tab = INPUT_TABS[activeSubTab];
-    return hafalanItems.filter(item => {
-      const categoryMatch = item.Category === tab.category;
-      // If tab has semester property, filter by semester, otherwise include all
-      const semesterMatch = 'semester' in tab ? item.Semester === tab.semester : true;
-      return categoryMatch && semesterMatch;
-    });
-  }, [hafalanItems, activeSubTab]);
+    return hafalanItems.filter(item => item.Semester === activeSemester);
+  }, [hafalanItems, activeSemester]);
 
   const filteredScores = useMemo(() => {
     let filtered = scores;
@@ -190,7 +184,12 @@ const TeacherPortal: React.FC<TeacherPortalProps> = ({ onBack, teacher }) => {
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    if (name === 'Item Name') {
+      const selectedItem = filteredHafalanItems.find(item => item.ItemName === value);
+      setFormData(prev => ({ ...prev, [name]: value, Category: selectedItem?.Category || '' }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleScoreSelect = (scoreValue: string) => {
@@ -211,7 +210,7 @@ const TeacherPortal: React.FC<TeacherPortalProps> = ({ onBack, teacher }) => {
       setSubmitStatus({ message: result.message, type: 'success' });
       setFormData({
         'Student ID': '',
-        Category: INPUT_TABS[activeSubTab].category,
+        Category: '',
         'Item Name': '',
         Score: '',
         Date: new Date().toISOString().split('T')[0],
@@ -242,10 +241,10 @@ const TeacherPortal: React.FC<TeacherPortalProps> = ({ onBack, teacher }) => {
               </select>
             </div>
             <div>
-              <label htmlFor="Item Name" className="block text-sm font-medium text-gray-700">Nama Item Penilaian</label>
+              <label htmlFor="Item Name" className="block text-sm font-medium text-gray-700">Hafalan Surah</label>
               <select id="Item Name" name="Item Name" value={formData['Item Name']} onChange={handleChange} required disabled={isLoadingHafalan || filteredHafalanItems.length === 0} className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm rounded-md disabled:bg-gray-100">
                 <option value="">{isLoadingHafalan ? 'Memuat item...' : 'Pilih Item'}</option>
-                {filteredHafalanItems.map(item => <option key={`${item.ItemName}-${item.Semester}`} value={item.ItemName}>{item.ItemName}</option>)}
+                {filteredHafalanItems.map((item, index) => <option key={`${item.ItemName}-${item.Category}-${item.Semester}-${index}`} value={item.ItemName}>{item.ItemName}</option>)}
               </select>
             </div>
           </div>
@@ -417,9 +416,16 @@ const TeacherPortal: React.FC<TeacherPortalProps> = ({ onBack, teacher }) => {
   return (
     <div className="bg-white rounded-2xl shadow-lg p-6 md:p-8 w-full max-w-6xl mx-auto">
       <div className="flex justify-between items-center mb-6 pb-4 border-b">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-800">Portal Guru</h2>
-          <p className="text-gray-500">Selamat datang, {teacher.Name}!</p>
+        <div className="flex items-center space-x-4">
+          <img
+            src="https://iili.io/f3I2n3v.png"
+            alt="Logo SD IT BINA INSAN"
+            className="w-12 h-12"
+          />
+          <div>
+            <h2 className="text-2xl font-bold text-gray-800">Portal Guru</h2>
+            <p className="text-gray-500">Selamat datang, {teacher.Name}!</p>
+          </div>
         </div>
         <button onClick={onBack} className="flex items-center text-emerald-600 hover:text-emerald-800 font-semibold">
           <ChevronLeftIcon className="w-5 h-5 mr-1" />
@@ -433,12 +439,12 @@ const TeacherPortal: React.FC<TeacherPortalProps> = ({ onBack, teacher }) => {
                 <button
                     onClick={() => setMainTab('input')}
                     className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${
-                        mainTab === 'input' 
-                        ? 'border-emerald-500 text-emerald-600' 
+                        mainTab === 'input'
+                        ? 'border-emerald-500 text-emerald-600'
                         : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                     }`}
                 >
-                    Input Hafalan
+                    Penilaian Hafalan
                 </button>
                 <button
                     onClick={() => setMainTab('report')}
@@ -459,23 +465,26 @@ const TeacherPortal: React.FC<TeacherPortalProps> = ({ onBack, teacher }) => {
             <div className="flex flex-col md:flex-row gap-8">
                 <aside className="w-full md:w-1/4">
                     <nav className="flex flex-col space-y-2">
-                    {(Object.keys(INPUT_TABS) as InputTabKey[]).map(tabKey => {
-                        const Icon = INPUT_TABS[tabKey].icon;
-                        return (
                         <button
-                            key={tabKey}
-                            onClick={() => setActiveSubTab(tabKey)}
+                            onClick={() => setActiveSemester(1)}
                             className={`flex items-center w-full text-left px-4 py-3 rounded-lg transition-colors duration-200 text-sm font-medium ${
-                                activeSubTab === tabKey
+                                activeSemester === 1
                                 ? 'bg-emerald-100 text-emerald-800'
                                 : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
                             }`}
                         >
-                            <Icon className="w-5 h-5 mr-3 flex-shrink-0" />
-                            <span>{INPUT_TABS[tabKey].label}</span>
+                            Semester 1
                         </button>
-                        )
-                    })}
+                        <button
+                            onClick={() => setActiveSemester(2)}
+                            className={`flex items-center w-full text-left px-4 py-3 rounded-lg transition-colors duration-200 text-sm font-medium ${
+                                activeSemester === 2
+                                ? 'bg-emerald-100 text-emerald-800'
+                                : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                            }`}
+                        >
+                            Semester 2
+                        </button>
                     </nav>
                 </aside>
                 <main className="flex-1 md:w-3/4">

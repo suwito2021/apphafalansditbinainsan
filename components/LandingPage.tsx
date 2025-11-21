@@ -1,20 +1,49 @@
 import React from 'react';
 
-const LandingPage: React.FC = () => {
+interface LandingPageProps {
+  onNavigate: (portal: 'teacher' | 'parent' | 'principal') => void;
+}
+
+const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
   return (
     <div className="w-full max-w-6xl mx-auto text-center">
-      <img 
-        src="https://iili.io/KmUyjwu.png" 
-        alt="Logo TK IT Harvysyah" 
-        className="mx-auto mb-8 w-32 h-32 md:w-40 md:h-40"
-      />
-      <h1 className="text-4xl md:text-5xl font-bold mb-4 text-gray-800">Selamat di Aplikasi</h1>
-      <p className="text-lg md:text-xl mb-8 text-gray-600">Generasi Qurani TK IT Harvysyah</p>
-      <img
-        src="https://iili.io/f9XLdV2.jpg"
-        alt="Kegiatan Belajar Mengajar TK IT Harvysyah"
-        className="mx-auto mt-8 rounded-lg shadow-lg max-w-4xl w-full"
-      />
+      <h1 className="text-2xl md:text-3xl mb-4 text-gray-800">Selamat Datang di Aplikasi</h1>
+      <p className="text-2xl md:text-3xl font-bold mb-8 text-gray-600">SD IT BINA INSAN</p>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+          <h3 className="text-xl font-semibold mb-4 text-blue-600">Portal Guru</h3>
+          <p className="text-gray-600 mb-4">Akses untuk guru mengelola data siswa dan penilaian.</p>
+          <button
+            onClick={() => onNavigate('teacher')}
+            className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors"
+          >
+            Masuk Portal Guru
+          </button>
+        </div>
+
+        <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+          <h3 className="text-xl font-semibold mb-4 text-green-600">Portal Orang Tua</h3>
+          <p className="text-gray-600 mb-4">Pantau perkembangan anak dan laporan belajar.</p>
+          <button
+            onClick={() => onNavigate('parent')}
+            className="bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700 transition-colors"
+          >
+            Masuk Portal Orang Tua
+          </button>
+        </div>
+
+        <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+          <h3 className="text-xl font-semibold mb-4 text-purple-600">Portal Admin</h3>
+          <p className="text-gray-600 mb-4">Akses administratif untuk kepala sekolah.</p>
+          <button
+            onClick={() => onNavigate('principal')}
+            className="bg-purple-600 text-white px-6 py-2 rounded-md hover:bg-purple-700 transition-colors"
+          >
+            Masuk Portal Admin
+          </button>
+        </div>
+      </div>
     </div>
   );
 };

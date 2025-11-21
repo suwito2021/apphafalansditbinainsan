@@ -1,12 +1,11 @@
 import React, { useState, useCallback } from 'react';
-import LandingPage from './components/LandingPage';
-import TeacherPortal from './components/TeacherPortal';
-import ParentPortal from './components/ParentPortal';
-import PrincipalPortal from './components/PrincipalPortal';
-import Login from './components/Login';
-import Sidebar from './components/Sidebar';
-import Header from './components/Header';
-import SchoolInfoModal from './components/SchoolInfoModal';
+import LandingPage from './components/LandingPage.tsx';
+import TeacherPortal from './components/TeacherPortal.tsx';
+import ParentPortal from './components/ParentPortal.tsx';
+import PrincipalPortal from './components/PrincipalPortal.tsx';
+import Login from './components/Login.tsx';
+import Header from './components/Header.tsx';
+import SchoolInfoModal from './components/SchoolInfoModal.tsx';
 import type { Teacher, Student, Principal } from './types';
 
 type Portal = 'landing' | 'teacher' | 'parent' | 'principal';
@@ -15,21 +14,11 @@ type User = Teacher | Student | Principal;
 const App: React.FC = () => {
   const [activePortal, setActivePortal] = useState<Portal>('landing');
   const [loggedInUser, setLoggedInUser] = useState<User | null>(null);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSchoolInfoVisible, setIsSchoolInfoVisible] = useState(false);
-
-  const toggleSidebar = useCallback(() => {
-    setIsSidebarOpen(prev => !prev);
-  }, []);
-  
-  const closeSidebar = useCallback(() => {
-    setIsSidebarOpen(false);
-  }, []);
 
   const handleShowSchoolInfo = useCallback(() => {
     setIsSchoolInfoVisible(true);
-    closeSidebar();
-  }, [closeSidebar]);
+  }, []);
 
   const handleCloseSchoolInfo = useCallback(() => {
     setIsSchoolInfoVisible(false);
@@ -38,19 +27,16 @@ const App: React.FC = () => {
   const handlePortalSelect = useCallback((portal: Portal) => {
     setActivePortal(portal);
     setLoggedInUser(null); // Reset user on new portal selection
-    closeSidebar();
-  }, [closeSidebar]);
+  }, []);
 
   const handleBackToHome = useCallback(() => {
     setActivePortal('landing');
     setLoggedInUser(null);
-    closeSidebar();
-  }, [closeSidebar]);
+  }, []);
 
   const handleLoginSuccess = useCallback((user: User) => {
     setLoggedInUser(user);
-    closeSidebar();
-  }, [closeSidebar]);
+  }, []);
 
   const renderPortal = () => {
     switch (activePortal) {
@@ -68,27 +54,39 @@ const App: React.FC = () => {
             <Login portalType="principal" onBack={handleBackToHome} onLoginSuccess={handleLoginSuccess} />;
       case 'landing':
       default:
-        return <LandingPage />;
+        return <LandingPage onNavigate={handlePortalSelect} />;
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 font-sans">
-        <Sidebar 
-            isOpen={isSidebarOpen} 
-            onClose={closeSidebar}
-            onNavigate={handlePortalSelect}
-            onGoHome={handleBackToHome}
-            onShowSchoolInfo={handleShowSchoolInfo}
-            isLoggedIn={!!loggedInUser}
-            onLogout={handleBackToHome}
-        />
-        <div className="flex flex-col transition-all duration-300 md:pl-64">
-            <Header onMenuClick={toggleSidebar} />
-            <main className="flex-grow p-4 md:p-8 flex items-center justify-center">
-                {renderPortal()}
-            </main>
-        </div>
+    <div className="min-h-screen bg-[url('https://iili.io/f3IABPR.jpg')] bg-cover bg-center font-sans">
+        <nav className="bg-emerald-900 text-white shadow-md">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="flex justify-between h-16">
+                    <div className="flex items-center space-x-4">
+                        <img
+                            src="https://iili.io/f3I2n3v.png"
+                            alt="Logo SD IT BINA INSAN"
+                            className="w-10 h-10"
+                        />
+                        <h1 className="text-xl font-bold">SD IT BINA INSAN</h1>
+                    </div>
+                    <div className="flex items-center space-x-4">
+                        <button onClick={handleBackToHome} className="hover:bg-emerald-700 px-3 py-2 rounded-md text-sm font-medium">Home</button>
+                        <button onClick={() => handlePortalSelect('teacher')} className="hover:bg-emerald-700 px-3 py-2 rounded-md text-sm font-medium">Portal Guru</button>
+                        <button onClick={() => handlePortalSelect('parent')} className="hover:bg-emerald-700 px-3 py-2 rounded-md text-sm font-medium">Portal Orang Tua</button>
+                        <button onClick={() => handlePortalSelect('principal')} className="hover:bg-emerald-700 px-3 py-2 rounded-md text-sm font-medium">Portal Admin</button>
+                        <button onClick={handleShowSchoolInfo} className="hover:bg-emerald-700 px-3 py-2 rounded-md text-sm font-medium">Info Sekolah</button>
+                        {loggedInUser && (
+                            <button onClick={handleBackToHome} className="hover:bg-emerald-700 px-3 py-2 rounded-md text-sm font-medium">Logout</button>
+                        )}
+                    </div>
+                </div>
+            </div>
+        </nav>
+        <main className="flex-grow p-4 md:p-8 flex items-center justify-center">
+            {renderPortal()}
+        </main>
         {isSchoolInfoVisible && <SchoolInfoModal onClose={handleCloseSchoolInfo} />}
     </div>
   );

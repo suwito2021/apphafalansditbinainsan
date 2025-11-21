@@ -23,55 +23,55 @@ const SchoolInfoModal: React.FC<SchoolInfoModalProps> = ({ onClose }) => {
           <XIcon className="w-6 h-6" />
         </button>
         <div className="text-center mb-6">
-          <img 
-            src="https://iili.io/KmUyjwu.png" 
-            alt="Logo TK IT Harvysyah" 
+          <img
+            src="https://iili.io/f3I2n3v.png"
+            alt="Logo SD IT BINA INSAN"
             className="mx-auto mb-4 w-20 h-20"
           />
           <h2 className="text-2xl font-bold text-gray-800">Informasi Sekolah</h2>
-          <p className="text-gray-500">TK IT Harvysyah</p>
+          <p className="text-gray-500">SD IT BINA INSAN LUBUK PAKAM</p>
         </div>
         
         <div className="space-y-3 text-sm md:text-base text-gray-700">
           <div className="flex">
-            <p className="font-semibold w-32 shrink-0">Nama</p>
-            <p>: TK IT Harvysyah</p>
+            <p className="font-semibold w-40 shrink-0">Nama</p>
+            <p>: SD IT BINA INSAN LUBUK PAKAM</p>
           </div>
           <div className="flex">
-            <p className="font-semibold w-32 shrink-0">Alamat</p>
-            <p>: Jalan Sadar Timur Gang Rahmad No. 042</p>
+            <p className="font-semibold w-40 shrink-0">NPSN</p>
+            <p>: 70047606</p>
           </div>
           <div className="flex">
-            <p className="font-semibold w-32 shrink-0">Kelurahan</p>
-            <p>: Sekip</p>
+            <p className="font-semibold w-40 shrink-0">Alamat</p>
+            <p>: Jl. Mesjid I Desa Sekip</p>
           </div>
           <div className="flex">
-            <p className="font-semibold w-32 shrink-0">Kecamatan</p>
-            <p>: Lubuk Pakam</p>
+            <p className="font-semibold w-40 shrink-0">Desa/Kelurahan</p>
+            <p>: SEKIP</p>
           </div>
           <div className="flex">
-            <p className="font-semibold w-32 shrink-0">Kabupaten</p>
-            <p>: Deli Serdang</p>
+            <p className="font-semibold w-40 shrink-0">Kecamatan/Kota (LN)</p>
+            <p>: KEC. LUBUK PAKAM</p>
           </div>
           <div className="flex">
-            <p className="font-semibold w-32 shrink-0">Provinsi</p>
-            <p>: Sumatera Utara</p>
+            <p className="font-semibold w-40 shrink-0">Kab.-Kota/Negara (LN)</p>
+            <p>: KAB. DELI SERDANG</p>
           </div>
           <div className="flex">
-            <p className="font-semibold w-32 shrink-0">Kode Pos</p>
-            <p>: 20517</p>
+            <p className="font-semibold w-40 shrink-0">Propinsi/Luar Negeri (LN)</p>
+            <p>: PROV. SUMATERA UTARA</p>
           </div>
           <div className="flex">
-            <p className="font-semibold w-32 shrink-0">Status</p>
-            <p>: Swasta</p>
+            <p className="font-semibold w-40 shrink-0">Status Sekolah</p>
+            <p>: SWASTA</p>
           </div>
           <div className="flex">
-            <p className="font-semibold w-32 shrink-0">Kepala Sekolah</p>
-            <p>: Yusri Elvida Daulay</p>
+            <p className="font-semibold w-40 shrink-0">Bentuk Pendidikan</p>
+            <p>: SD</p>
           </div>
           <div className="flex">
-            <p className="font-semibold w-32 shrink-0">Handphone</p>
-            <p>: 081262006253</p>
+            <p className="font-semibold w-40 shrink-0">Jenjang Pendidikan</p>
+            <p>: DIKDAS</p>
           </div>
         </div>
       </div>

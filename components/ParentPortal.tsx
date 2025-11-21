@@ -33,9 +33,16 @@ const ParentPortal: React.FC<ParentPortalProps> = ({ onBack, student }) => {
   return (
     <div className="bg-white rounded-2xl shadow-lg p-6 md:p-8 w-full max-w-4xl mx-auto">
       <div className="flex justify-between items-center mb-6">
-        <div>
+        <div className="flex items-center space-x-4">
+          <img
+            src="https://iili.io/f3I2n3v.png"
+            alt="Logo SD IT BINA INSAN"
+            className="w-12 h-12"
+          />
+          <div>
             <h2 className="text-2xl font-bold text-gray-800">Portal Orang Tua</h2>
             <p className="text-gray-500">Laporan Belajar untuk: <strong>{student.Name}</strong></p>
+          </div>
         </div>
         <button onClick={onBack} className="flex items-center text-emerald-600 hover:text-emerald-800 font-semibold">
             <ChevronLeftIcon className="w-5 h-5 mr-1" />

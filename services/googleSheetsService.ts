@@ -1,13 +1,11 @@
 import { Score } from '../types';
-import { defaultHafalanData } from '../data/hafalanDefaults';
-import hafalanData from '../data/hafalanSurahData.json';
 
-const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzpg2KxrmSatA7Hs0iqAuyWj1nTlHQL60gFy0rdNh7WYPkvWHLY6S2W_Ypzffe0pYcb/exec';
-const TEACHER_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRbz8LUyBo51HkpA0O0_8srtlG-7RxWLvesNbnmC3shQB9qC6EbUzx3dvXp5lWnmk7BR3sGuERPWZbg/pub?gid=735271315&single=true&output=csv';
-const STUDENT_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRbz8LUyBo51HkpA0O0_8srtlG-7RxWLvesNbnmC3shQB9qC6EbUzx3dvXp5lWnmk7BR3sGuERPWZbg/pub?gid=1983478163&single=true&output=csv';
-const HAFALAN_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRbz8LUyBo51HkpA0O0_8srtlG-7RxWLvesNbnmC3shQB9qC6EbUzx3dvXp5lWnmk7BR3sGuERPWZbg/pub?gid=452521597&single=true&output=csv';
-const PRINCIPAL_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRbz8LUyBo51HkpA0O0_8srtlG-7RxWLvesNbnmC3shQB9qC6EbUzx3dvXp5lWnmk7BR3sGuERPWZbg/pub?gid=1638530657&single=true&output=csv';
-const SCORE_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRbz8LUyBo51HkpA0O0_8srtlG-7RxWLvesNbnmC3shQB9qC6EbUzx3dvXp5lWnmk7BR3sGuERPWZbg/pub?gid=0&single=true&output=csv';
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzrW37EdZTgtdjiOWVq23X9m2E27SZgyz4ZsJBwfY-s2JX5oDcQQV0J17aKdu-5VPyI/exec';
+const TEACHER_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQmPzhr4OLbqOvz_PPL4KfN5dsKmsoF5YlWVOkkV5v6TDJqw9bPDYAmgVgdmjhaEoiuBxQPovboEzo8/pub?gid=1198666405&single=true&output=csv';
+const STUDENT_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQmPzhr4OLbqOvz_PPL4KfN5dsKmsoF5YlWVOkkV5v6TDJqw9bPDYAmgVgdmjhaEoiuBxQPovboEzo8/pub?gid=519414556&single=true&output=csv';
+const PRINCIPAL_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQmPzhr4OLbqOvz_PPL4KfN5dsKmsoF5YlWVOkkV5v6TDJqw9bPDYAmgVgdmjhaEoiuBxQPovboEzo8/pub?gid=128346155&single=true&output=csv';
+const HAFALAN_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQmPzhr4OLbqOvz_PPL4KfN5dsKmsoF5YlWVOkkV5v6TDJqw9bPDYAmgVgdmjhaEoiuBxQPovboEzo8/pub?gid=811231345&single=true&output=csv';
+const SCORE_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQmPzhr4OLbqOvz_PPL4KfN5dsKmsoF5YlWVOkkV5v6TDJqw9bPDYAmgVgdmjhaEoiuBxQPovboEzo8/pub?gid=1979670148&single=true&output=csv';
 
 /**
  * A simple CSV parser that handles quoted values containing commas.
@@ -78,7 +76,12 @@ export const getSheetData = async <T,>(sheetName: string): Promise<T[]> => {
         const csvText = await response.text();
         return parseCSV<T>(csvText);
     } else if (sheetName === 'Hafalan') {
-        return hafalanData as T[];
+        const response = await fetch(HAFALAN_CSV_URL);
+        if (!response.ok) {
+            throw new Error(`Error fetching Hafalan CSV data: ${response.statusText}`);
+        }
+        const csvText = await response.text();
+        return parseCSV<T>(csvText);
     } else if (sheetName === 'Principal') {
         const response = await fetch(PRINCIPAL_CSV_URL);
         if (!response.ok) {
