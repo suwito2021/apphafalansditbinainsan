@@ -313,6 +313,11 @@ const TeacherPortal: React.FC<TeacherPortalProps> = ({ onBack, teacher }) => {
             </button>
           </div>
         </form>
+        {submitStatus && (
+          <div className={`mt-4 p-4 rounded-md ${submitStatus.type === 'success' ? 'bg-green-50 border border-green-200 text-green-800' : 'bg-red-50 border border-red-200 text-red-800'}`}>
+            <p className="text-sm font-medium">{submitStatus.message}</p>
+          </div>
+        )}
       </div>
     );
   };
