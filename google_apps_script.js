@@ -23,9 +23,9 @@ function doPost(e) {
 
     if (request.action === 'addScore') {
       const scoreData = request.data;
-      const sheet = spreadsheet.getActiveSheet(); // Score sheet (gid=0)
+      const sheet = getSheetByGid(spreadsheet, '1979670148'); // Score sheet gid
       sheet.appendRow([
-        new Date(scoreData.Timestamp),
+        new Date(), // Generate current timestamp
         scoreData['Student ID'],
         scoreData.Category,
         scoreData['Item Name'],
