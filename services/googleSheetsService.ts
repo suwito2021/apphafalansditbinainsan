@@ -1,6 +1,6 @@
 import { Score } from '../types';
 
-const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbw7iaHBrjoQAi_K7a0nNdmciM6TO-IZGfesIkxSzYWgiW7WkPENuc7WofaT_wkeNf0/exec';
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbygmYlheU2gn14JBEQIUJl77AXEPoT3ySDjp39J5vmd-h7G4fDreMjr5dA7kXOwC3gC/exec';
 const TEACHER_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQmPzhr4OLbqOvz_PPL4KfN5dsKmsoF5YlWVOkkV5v6TDJqw9bPDYAmgVgdmjhaEoiuBxQPovboEzo8/pub?gid=1198666405&single=true&output=csv';
 const STUDENT_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQmPzhr4OLbqOvz_PPL4KfN5dsKmsoF5YlWVOkkV5v6TDJqw9bPDYAmgVgdmjhaEoiuBxQPovboEzo8/pub?gid=519414556&single=true&output=csv';
 const PRINCIPAL_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQmPzhr4OLbqOvz_PPL4KfN5dsKmsoF5YlWVOkkV5v6TDJqw9bPDYAmgVgdmjhaEoiuBxQPovboEzo8/pub?gid=128346155&single=true&output=csv';
