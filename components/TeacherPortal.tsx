@@ -62,7 +62,10 @@ const TeacherPortal: React.FC<TeacherPortalProps> = ({ onBack, teacher }) => {
     Score: '',
     Date: new Date().toISOString().split('T')[0],
     Notes: '',
+    Ayat: '',
   });
+  const [selectedAyat, setSelectedAyat] = useState<number[]>([]);
+  const [maxAyat, setMaxAyat] = useState<number>(100);
 
   useEffect(() => {
     const fetchStudents = async () => {
@@ -86,7 +89,8 @@ const TeacherPortal: React.FC<TeacherPortalProps> = ({ onBack, teacher }) => {
       try {
         setIsLoadingHafalan(true);
         const hafalanData = await getSheetData<Hafalan>('Hafalan');
-        setHafalanItems(hafalanData);
+        const filteredData = hafalanData.filter(h => h.Class === teacher.Class);
+        setHafalanItems(filteredData);
       } catch (err) {
         setError(prev => prev || 'Gagal memuat daftar item hafalan.');
       } finally {
@@ -94,7 +98,7 @@ const TeacherPortal: React.FC<TeacherPortalProps> = ({ onBack, teacher }) => {
       }
     };
     fetchHafalanItems();
-  }, []);
+  }, [teacher.Class]);
 
   useEffect(() => {
     if (mainTab === 'input') {
@@ -103,7 +107,10 @@ const TeacherPortal: React.FC<TeacherPortalProps> = ({ onBack, teacher }) => {
         Category: '',
         'Item Name': '',
         Score: '',
+        Ayat: '',
       }));
+      setSelectedAyat([]);
+      setMaxAyat(100);
     }
     setSubmitStatus(null);
   }, [activeSemester, mainTab]);
@@ -131,7 +138,7 @@ const TeacherPortal: React.FC<TeacherPortalProps> = ({ onBack, teacher }) => {
 
   const studentMap = useMemo(() => new Map(students.map(s => [s.NISN, s.Name])), [students]);
   const filteredHafalanItems = useMemo(() => {
-    return hafalanItems.filter(item => item.Semester === activeSemester);
+    return hafalanItems.filter(item => parseInt(item.Semester as string) === activeSemester);
   }, [hafalanItems, activeSemester]);
 
   const filteredScores = useMemo(() => {
@@ -187,6 +194,9 @@ const TeacherPortal: React.FC<TeacherPortalProps> = ({ onBack, teacher }) => {
     if (name === 'Item Name') {
       const selectedItem = filteredHafalanItems.find(item => item.ItemName === value);
       setFormData(prev => ({ ...prev, [name]: value, Category: selectedItem?.Category || '' }));
+      setMaxAyat(parseInt(selectedItem?.['Jlh Ayat'] as string) || 100);
+      // Reset selectedAyat if exceeds new max
+      setSelectedAyat(prev => prev.filter(a => a <= (parseInt(selectedItem?.['Jlh Ayat'] as string) || 100)));
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
     }
@@ -194,6 +204,10 @@ const TeacherPortal: React.FC<TeacherPortalProps> = ({ onBack, teacher }) => {
 
   const handleScoreSelect = (scoreValue: string) => {
     setFormData(prev => ({ ...prev, Score: scoreValue }));
+  }
+
+  const handleAyatSelect = (ayat: number) => {
+    setSelectedAyat(prev => prev.includes(ayat) ? prev.filter(a => a !== ayat) : [...prev, ayat]);
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -206,7 +220,8 @@ const TeacherPortal: React.FC<TeacherPortalProps> = ({ onBack, teacher }) => {
     setIsSubmitting(true);
     setSubmitStatus(null);
     try {
-      const result = await addScore(formData);
+      const submitData = { ...formData, Ayat: selectedAyat.sort((a, b) => a - b).join(',') };
+      const result = await addScore(submitData);
       setSubmitStatus({ message: result.message, type: 'success' });
       setFormData({
         'Student ID': '',
@@ -215,7 +230,9 @@ const TeacherPortal: React.FC<TeacherPortalProps> = ({ onBack, teacher }) => {
         Score: '',
         Date: new Date().toISOString().split('T')[0],
         Notes: '',
+        Ayat: '',
       });
+      setSelectedAyat([]);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Terjadi kesalahan yang tidak diketahui.';
       setSubmitStatus({ message: `Gagal mengirim data: ${errorMessage}`, type: 'error' });
@@ -234,20 +251,36 @@ const TeacherPortal: React.FC<TeacherPortalProps> = ({ onBack, teacher }) => {
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label htmlFor="Student ID" className="block text-sm font-medium text-gray-700">Siswa (Kelas {teacher.Class})</label>
               <select id="Student ID" name="Student ID" value={formData['Student ID']} onChange={handleChange} required className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm rounded-md">
                 <option value="">Pilih Siswa</option>
                 {students.map((student, index) => <option key={`${student.NISN}-${index}`} value={student.NISN}>{student.Name} ({student.NISN})</option>)}
               </select>
             </div>
             <div>
-              <label htmlFor="Item Name" className="block text-sm font-medium text-gray-700">Hafalan Surah</label>
               <select id="Item Name" name="Item Name" value={formData['Item Name']} onChange={handleChange} required disabled={isLoadingHafalan || filteredHafalanItems.length === 0} className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm rounded-md disabled:bg-gray-100">
                 <option value="">{isLoadingHafalan ? 'Memuat item...' : 'Pilih Item'}</option>
                 {filteredHafalanItems.map((item, index) => <option key={`${item.ItemName}-${item.Category}-${item.Semester}-${index}`} value={item.ItemName}>{item.ItemName}</option>)}
               </select>
             </div>
           </div>
+          {formData['Item Name'] && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Ayat yang Dihafal</label>
+              <div className="grid grid-cols-10 gap-2 max-h-60 overflow-y-auto border border-gray-300 rounded-md p-4">
+                {Array.from({ length: maxAyat }, (_, i) => i + 1).map(ayat => (
+                  <label key={ayat} className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      checked={selectedAyat.includes(ayat)}
+                      onChange={() => handleAyatSelect(ayat)}
+                      className="h-4 w-4 text-emerald-600 focus:ring-emerald-500 border-gray-300 rounded"
+                    />
+                    <span className="text-sm">{ayat}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Penilaian</label>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -280,7 +313,6 @@ const TeacherPortal: React.FC<TeacherPortalProps> = ({ onBack, teacher }) => {
             </button>
           </div>
         </form>
-        {submitStatus && <div className={`mt-4 p-4 rounded-md text-sm ${submitStatus.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{submitStatus.message}</div>}
       </div>
     );
   };
@@ -326,6 +358,7 @@ const TeacherPortal: React.FC<TeacherPortalProps> = ({ onBack, teacher }) => {
                 <th scope="col" className="px-4 py-3 text-left text-xs font-bold text-white uppercase tracking-wider">Nama Siswa</th>
                 <th scope="col" className="px-4 py-3 text-left text-xs font-bold text-white uppercase tracking-wider">Kategori</th>
                 <th scope="col" className="px-4 py-3 text-left text-xs font-bold text-white uppercase tracking-wider">Item Hafalan</th>
+                <th scope="col" className="px-4 py-3 text-left text-xs font-bold text-white uppercase tracking-wider">Ayat</th>
                 <th scope="col" className="px-4 py-3 text-left text-xs font-bold text-white uppercase tracking-wider">Rating</th>
                 <th scope="col" className="px-4 py-3 text-left text-xs font-bold text-white uppercase tracking-wider">Tanggal</th>
                 <th scope="col" className="px-4 py-3 text-left text-xs font-bold text-white uppercase tracking-wider">Catatan</th>
@@ -338,6 +371,7 @@ const TeacherPortal: React.FC<TeacherPortalProps> = ({ onBack, teacher }) => {
                   <td className="px-4 py-4 text-sm text-gray-900 font-medium break-words">{studentMap.get(score['Student ID']) || score['Student ID']}</td>
                   <td className="px-4 py-4 text-sm text-gray-900 break-words">{score.Category}</td>
                   <td className="px-4 py-4 text-sm text-gray-900 break-words">{score['Item Name']}</td>
+                  <td className="px-4 py-4 text-sm text-gray-900 break-words">{score.Ayat || '-'}</td>
                   <td className="px-4 py-4 text-sm text-gray-900 font-semibold break-words">{score.Score}</td>
                   <td className="px-4 py-4 text-sm text-gray-500 break-words">{score.Date}</td>
                   <td className="px-4 py-4 text-sm text-gray-900 break-words">{score.Notes || '-'}</td>
@@ -368,47 +402,6 @@ const TeacherPortal: React.FC<TeacherPortalProps> = ({ onBack, teacher }) => {
             </button>
           </div>
         )}
-        <div className="mt-8">
-          <h4 className="text-lg font-semibold text-gray-800 mb-4">Grafik Capaian Penilaian</h4>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div>
-              <h5 className="text-md font-medium text-gray-700 mb-2">Hafalan Surah Pendek</h5>
-              <ResponsiveContainer width="100%" height={250}>
-                <BarChart data={scoreCountsSurah}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="score" />
-                  <YAxis />
-                  <Tooltip />
-                  <Bar dataKey="count" fill="#10b981" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-            <div>
-              <h5 className="text-md font-medium text-gray-700 mb-2">Hafalan Doa Sehari-hari</h5>
-              <ResponsiveContainer width="100%" height={250}>
-                <BarChart data={scoreCountsDoa}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="score" />
-                  <YAxis />
-                  <Tooltip />
-                  <Bar dataKey="count" fill="#3b82f6" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-            <div>
-              <h5 className="text-md font-medium text-gray-700 mb-2">Hafalan Hadist</h5>
-              <ResponsiveContainer width="100%" height={250}>
-                <BarChart data={scoreCountsHadist}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="score" />
-                  <YAxis />
-                  <Tooltip />
-                  <Bar dataKey="count" fill="#ef4444" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-        </div>
       </div>
     );
   };

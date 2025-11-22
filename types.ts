@@ -22,11 +22,15 @@ export interface Score {
   Score: string;
   Date: string;
   Notes: string;
+  Ayat?: string;
   Timestamp?: string;
 }
 
 export interface Hafalan {
-  Category: 'Hafalan Surah Pendek' | 'Hafalan Doa Sehari-hari' | 'Hafalan Hadist';
+  Category?: 'Hafalan Surah Pendek' | 'Hafalan Doa Sehari-hari' | 'Hafalan Hadist';
+  Class?: string;
   ItemName: string;
   Semester?: number;
+  JlhAyat?: string;
+  [key: string]: any;
 }

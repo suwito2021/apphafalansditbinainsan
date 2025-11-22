@@ -4,7 +4,7 @@ const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzrW37EdZTgtdjiOWVq
 const TEACHER_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQmPzhr4OLbqOvz_PPL4KfN5dsKmsoF5YlWVOkkV5v6TDJqw9bPDYAmgVgdmjhaEoiuBxQPovboEzo8/pub?gid=1198666405&single=true&output=csv';
 const STUDENT_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQmPzhr4OLbqOvz_PPL4KfN5dsKmsoF5YlWVOkkV5v6TDJqw9bPDYAmgVgdmjhaEoiuBxQPovboEzo8/pub?gid=519414556&single=true&output=csv';
 const PRINCIPAL_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQmPzhr4OLbqOvz_PPL4KfN5dsKmsoF5YlWVOkkV5v6TDJqw9bPDYAmgVgdmjhaEoiuBxQPovboEzo8/pub?gid=128346155&single=true&output=csv';
-const HAFALAN_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQmPzhr4OLbqOvz_PPL4KfN5dsKmsoF5YlWVOkkV5v6TDJqw9bPDYAmgVgdmjhaEoiuBxQPovboEzo8/pub?gid=811231345&single=true&output=csv';
+const HAFALAN_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQmPzhr4OLbqOvz_PPL4KfN5dsKmsoF5YlWVOkkV5v6TDJqw9bPDYAmgVgdmjhaEoiuBxQPovboEzo8/pub?gid=425734287&single=true&output=csv';
 const SCORE_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQmPzhr4OLbqOvz_PPL4KfN5dsKmsoF5YlWVOkkV5v6TDJqw9bPDYAmgVgdmjhaEoiuBxQPovboEzo8/pub?gid=1979670148&single=true&output=csv';
 
 /**
