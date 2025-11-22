@@ -37,9 +37,7 @@ function doPost(e) {
       return ContentService
         .createTextOutput(JSON.stringify({ success: true, message: 'Score added successfully' }))
         .setMimeType(ContentService.MimeType.JSON)
-        .setHeader('Access-Control-Allow-Origin', '*')
-        .setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-        .setHeader('Access-Control-Allow-Headers', 'Content-Type');
+        .setHeader('Access-Control-Allow-Origin', '*');
     } else {
       throw new Error('Invalid action');
     }
@@ -48,9 +46,7 @@ function doPost(e) {
     return ContentService
       .createTextOutput(JSON.stringify({ success: false, error: error.toString() }))
       .setMimeType(ContentService.MimeType.JSON)
-      .setHeader('Access-Control-Allow-Origin', '*')
-      .setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-      .setHeader('Access-Control-Allow-Headers', 'Content-Type');
+      .setHeader('Access-Control-Allow-Origin', '*');
   }
 }
 
